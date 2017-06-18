@@ -1,5 +1,5 @@
 
-CONFIG="config_files/config_l_2.txt"
+CONFIG="config_files/config_scrat.txt"
 
 python create_triplets.py $CONFIG
 

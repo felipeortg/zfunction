@@ -28,7 +28,7 @@ for z_coord in range(-cube_num,cube_num+1):
 						w_list.append(triplet)
 					
 
-folder = '../'+ trip_folder +'triplets/'
+folder = trip_folder +'triplets/'
 
 filename = folder + 'n_list_r<' + str(cube_num) + '.txt'
 
