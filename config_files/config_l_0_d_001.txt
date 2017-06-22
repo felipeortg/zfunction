@@ -2,7 +2,7 @@
 # use the format (without the #):
 #folder (name of folder)/
 #cube num (number)
-#l (number) 
+#l (number)
 #m (number)
 #dx (number)
 #dy (number)
@@ -14,8 +14,8 @@ folder felipe_results/
 cube num 20
 l 0
 m 0
-dx 1
+dx 0
 dy 0
-dz 0
-x2max 2
-points 200
+dz 1
+x2max 5
+points 500

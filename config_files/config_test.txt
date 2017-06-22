@@ -1,12 +1,12 @@
-folder scratch2/
+folder felipe_results/
 cube num 20
-l 2
+l 0
 m 0
 dx 1
 dy 1
 dz 0
-x2max 1.5
-points 20
+x2max 1
+points 41
 
 # Configuration file to simplify the z function calculation
 # use the format (without the #):

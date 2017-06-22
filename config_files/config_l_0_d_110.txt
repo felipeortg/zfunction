@@ -15,7 +15,7 @@ cube num 20
 l 0
 m 0
 dx 1
-dy 0
+dy 1
 dz 0
-x2max 2
-points 200
+x2max 5
+points 500

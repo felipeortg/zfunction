@@ -1,8 +1,15 @@
 import os
 import sys
-import pylab as pl
+import matplotlib.pyplot as plt
 import numpy as np
 import datetime as dt
+
+# -----------------
+# Matplotlib param
+plt.rc('text', usetex=True)
+plt.rc('font', size=12)
+#plt.rc('font', family='serif')
+plt.rc('axes.formatter', useoffset = False)
 
 # -----------------
 # Config file:
@@ -26,6 +33,8 @@ with open(config_file, 'r') as f:
 
 d = [dx,dy,dz]
 
+save_folder = '../'+folder+'Plots/'
+
 filename = 'Z_' + str(l) +'_' + str(m)+ '_d(' + str(d) +')'
 
 # For plotting a specific data set use the following format:
@@ -43,26 +52,24 @@ x = np.load(folder+filename+'.npy')
 y_re = np.real(y)
 y_im = np.imag(y)
 
-fig = pl.figure()
+fig = plt.figure()
 
-pl.plot(x, y_re,label='Real part')
-pl.plot(x, y_im, label='Imaginary part')
+plt.plot(x, y_re,label='Real part')
+plt.plot(x, y_im, label='Imaginary part')
 
 # tidy up the figure
-pl.grid(True)
-pl.legend(loc='upper right')
-pl.title('Z(l = ' + str(l) + ', m = '+ str(m) +', d = ' + str(d) +')')
-pl.xlabel('x^2')
+plt.grid(True)
+plt.legend(loc='upper right')
+plt.title(r'$Z_{' + str(l) + str(m) +'}^{' + str(d) +'}[1;x^2]$')
+plt.xlabel(r'$x^2$')
 
 # show the plot on the screen
 
-folder = '../felipe_results/Plots/'
+if not os.path.exists(save_folder):
+	os.makedirs(save_folder)
 
-if not os.path.exists(folder):
-	os.makedirs(folder)
+figname = save_folder + filename[3:] + '--' + str(dt.datetime.now())[:-16]+'.pdf'
 
-figname = folder + filename[3:] + '--' + str(dt.datetime.now())[:-16]+'.pdf'
-
-pl.show()
+plt.show()
 
 fig.savefig(figname)
