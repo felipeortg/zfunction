@@ -16,9 +16,9 @@ trip_folder = '../felipe_results/'
 n_list = []
 w_list = []
 
-for z_coord in range(-cube_num,cube_num+1):
+for x_coord in range(-cube_num,cube_num+1):
 		for y_coord in range(-cube_num,cube_num+1):
-			for x_coord in range(-cube_num,cube_num+1):
+			for z_coord in range(-cube_num,cube_num+1):
 				triplet = [x_coord,y_coord,z_coord]
 				norm = 0
 				for el in triplet: norm += el**2

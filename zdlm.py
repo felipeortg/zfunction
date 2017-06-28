@@ -20,7 +20,7 @@ with open(config_file, 'r') as f:
 		if line[0:9] == 'cube num ':
 			cube_num = int(line[9:])
 		if line[0] == 'L':
-			L = float(line[2:])
+			L_lattice_size = float(line[2:]) # fermis
 		if line[0] == 'l':
 			l = int(line[2:])
 		if line[0] == 'm':
@@ -33,6 +33,8 @@ with open(config_file, 'r') as f:
 			dz = int(line[2:])
 		if line[0:5] == 'x2max':
 			x2max = float(line[6:])
+		if line[0:5] == 'x2min':
+			x2min = float(line[6:])
 		if line[0:3] == 'x2q':
 			x2q = float(line[3:])
 			quick_ev = True
@@ -43,7 +45,7 @@ with open(config_file, 'r') as f:
 d = [dx,dy,dz]
 
 print 'Z function with (l,m) = (' + str(l) + ','+ str(m) +')\n d = ' + str(d) 
-
+print 'Shells (nmax) = ' +str(cube_num)
 # -----------------
 # Location to get triplets from:
 trip_folder = 'felipe_results/'
@@ -51,13 +53,13 @@ trip_folder = 'felipe_results/'
 # -----------------
 # Define constants
 I = complex(0.0,1.0)
-hbar = 197.326 # MeV fm when speed of ligth is 1
+hbar = 197.3269718 # MeV fm when speed of ligth is 1
 
 
 # -----------------
 # Define variables of the Z function
 # d= [1.0,1.0,0]
-L_lattice_size = 10.0 # fermis
+# L_lattice_size = 10.0 # fermis
 L = L_lattice_size/hbar # MeV^-1
 lab_moment = (2*np.pi/L)*np.array(d)
 lab_moment2 = np.dot(lab_moment,lab_moment)
@@ -127,6 +129,43 @@ w_par_arr = np.transpose(np.append([d_w_dot],[d_w_dot,d_w_dot],axis=0)) * d_arr_
 # Create array of the perpendicular component
 w_perp_arr = w_arr - w_par_arr
 
+# Define r^l times spherical harmonic (Laplace spherical solution)
+
+def lap_sol(m,l,x,y,z,r2):
+	# Receive azimutal m and polar l numbers
+	# x,y,z components of the vector
+	# r^2 squared magnitude of the vector
+	if m>l:
+		raise NameError('Azimutal number m bigger than l')
+	lm = 'l' +str(int(l))+'m' +str(int(m))
+	#print lm
+
+	r2_sph = r2 + (r2==0) # Last part to avoid division by zero
+
+	sph_dict = {
+		'l0m0': 0.5*np.sqrt(1./np.pi),
+
+		'l1m-1': 0.5*np.sqrt(3./(2*np.pi))*(x-I*y)/np.sqrt(r2_sph),
+
+		'l1m0': 0.5*np.sqrt(3./np.pi)*z/np.sqrt(r2_sph),
+
+		'l1m1': -0.5*np.sqrt(3./(2*np.pi))*(x+I*y)/np.sqrt(r2_sph),
+
+		'l2m-2': 0.25*np.sqrt(15./(2*np.pi))*(x-I*y)**2/(r2_sph),
+
+		'l2m-1': 0.5*np.sqrt(15./(2*np.pi))*z*(x-I*y)/(r2_sph),
+
+		'l2m0': 0.25*np.sqrt(5./(np.pi))*(3*z**2/(r2_sph)-1),
+
+		'l2m1': -0.5*np.sqrt(15./(2*np.pi))*z*(x+I*y)/(r2_sph),
+
+		'l2m2': 0.25*np.sqrt(15./(2*np.pi))*(x+I*y)**2/(r2_sph),
+	}
+
+	val = np.power(r2,l/2.0)*sph_dict[lm]
+	
+	return val
+
 # -----------------
 # Calculate the zeta function
 
@@ -149,24 +188,31 @@ def zdlm(l,m,x2):
 		# Calculate array of r vectors
 		r_arr = (1.0/gamma)*(n_par_arr-alpha*d_arr)+n_perp_arr
 
-		# Calculate array with square of the magnitude of r, the azimuthal and polar angle
+		# Spherical and cartesian components of r
+		rx = r_arr[:,0]
+		ry = r_arr[:,1]
+		rz = r_arr[:,2]
 		r2_array = np.sum(r_arr*r_arr, axis = 1)
-		r_azimuthal = np.arctan2(r_arr[:,1],r_arr[:,0])
-		r_polar = np.arctan2(np.sqrt(r_arr[:,0]**2 + r_arr[:,1]**2),r_arr[:,2])
+		# r_azimuthal = np.arctan2(ry,rx)
+		# r_polar = np.arctan2(np.sqrt(rx**2 + ry**2),rz)		
 
-		#gw triplets
+		# gw triplets
 		# Calculate array of gw vectors
 		gw_arr = gamma*w_par_arr+w_perp_arr
 
 		# Calculate array with square of the magnitude of gw, the azimuthal and polar angle
+		gwx = gw_arr[:,0]
+		gwy = gw_arr[:,1]
+		gwz = gw_arr[:,2]
 		gw2_array = np.sum(gw_arr*gw_arr, axis = 1)
-		gw_azimuthal = np.arctan2(gw_arr[:,1],gw_arr[:,0])
-		gw_polar = np.arctan2(np.sqrt(gw_arr[:,0]**2 + gw_arr[:,1]**2),gw_arr[:,2])
+		# gw_azimuthal = np.arctan2(gwy,gwx)
+		# gw_polar = np.arctan2(np.sqrt(gwy**2 + gwx**2),gwz)
 
 		# Calculate the first term of the Z function
-		first_term = sum(np.exp(-r2_array+x2)*(1.0/(r2_array-x2))*(r2_array**(l/2.0))*special.sph_harm(m,l,r_azimuthal,r_polar))
-
-		#print first_term
+		#first_term = sum(np.exp(-r2_array+x2)*(1.0/(r2_array-x2))*(r2_array**(l/2.0))*special.sph_harm(m,l,r_azimuthal,r_polar))
+		first_term = sum(np.exp(-r2_array+x2)*(1.0/(r2_array-x2))*lap_sol(m,l,rx,ry,rz,r2_array))
+		
+		# print first_term
 
 		# Calculate the second term
 		if l == 0:
@@ -176,14 +222,16 @@ def zdlm(l,m,x2):
 		else:
 			second_term = 0
 
-		#print second_term
+		# print second_term
 
 		# Calculate the third term
 		wd = np.inner(w_arr,d)
 		t1 = np.exp(I*2*np.pi*alpha*wd)
-		t2 = np.power(gw2_array,l/2.0)
-		t3 = special.sph_harm(m,l,gw_azimuthal,gw_polar)
-		coef_third_term = t1*t2*t3
+		t2 = lap_sol(m,l,gwx,gwy,gwz,gw2_array)
+		coef_third_term = t1*t2
+		# t2 = np.power(gw2_array,l/2.0)
+		# t3 = special.sph_harm(m,l,gw_azimuthal,gw_polar)
+		# coef_third_term = t1*t2*t3
 
 		third_term_r = integrate.quad(integr_third_term_r,0,1, args = (l,gw2_array,x2,coef_third_term))[0]
 
@@ -191,7 +239,7 @@ def zdlm(l,m,x2):
 
 		third_term = gamma*np.power(I,l)* (third_term_r + I*third_term_i)
 
-		#print third_term
+		# print third_term
 
 		total = first_term + second_term + third_term
 
@@ -203,7 +251,7 @@ if quick_ev == True:
 	# One point evaluation	
 	print zdlm(l,m,x2q)
 else:
-	print 'From 0 to ' +str(x2max)+ ' ' +str(points)+' points'
+	print 'From '+str(x2min)+ ' to ' +str(x2max)+ ' ' +str(points)+' points'
 	# ---------
 	# Several point calculation		
 
@@ -213,11 +261,11 @@ else:
 	# for l in xrange(0,1):
 	# 	for m in xrange(-l,l+1):
 
-	for x2 in xrange(0,points):
-		x[x2] = x2/(points-1.0)*x2max
-		y[x2] = zdlm(l,m,x[x2])
-		if x2 % 10 == 0:
-			print x2
+	for ii in xrange(0,points):
+		x[ii] = ii/(points-1.0)*(x2max-x2min) + x2min
+		y[ii] = zdlm(l,m,x[ii])
+		if ii % 10 == 0:
+			print ii
 
 	filename = 'Z_' + str(l) +'_' + str(m)+ '_d(' + str(d) +')'
 
