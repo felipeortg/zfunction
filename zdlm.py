@@ -44,6 +44,7 @@ with open(config_file, 'r') as f:
 
 d = [dx,dy,dz]
 
+print 'Lattice size: ' +str(L_lattice_size) + ' fm' 
 print 'Z function with (l,m) = (' + str(l) + ','+ str(m) +')\n d = ' + str(d) 
 print 'Shells (nmax) = ' +str(cube_num)
 # -----------------
@@ -251,6 +252,9 @@ if quick_ev == True:
 	# One point evaluation	
 	print zdlm(l,m,x2q)
 else:
+	if x2min < -(m1*L/(2*np.pi))**2:
+		x2min = -(m1*L/(2*np.pi))**2 + .01
+
 	print 'From '+str(x2min)+ ' to ' +str(x2max)+ ' ' +str(points)+' points'
 	# ---------
 	# Several point calculation		

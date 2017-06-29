@@ -11,11 +11,14 @@
 #points (number)
 
 folder scratch/
-cube num 1 
-L 10
-l 2
-m 2
-dx 1
-dy 1
+cube num 20 
+L 6
+l 0
+m 0
+dx 0
+dy 0
 dz 0
-x2q 0.501
+#x2q -0.501
+points 10
+x2max 1
+x2min -.5
